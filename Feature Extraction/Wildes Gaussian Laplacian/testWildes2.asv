@@ -1,0 +1,89 @@
+function testWildes2(EYES)
+
+allcorrect = [];
+
+for k = 1:length(EYES)
+    template = EYES(k).name;
+    comp = 0;
+    correct = 0;
+    for j = 1:length(EYES)
+        subject = EYES(j).name;
+        if strcmp(template,subject)
+            continue;
+        end
+        v = twildes(EYES, template, subject);
+        if ((v && strcmp(subject(1:6), template(1:6))) || ...
+                (~v && ~strcmp(subject(1:6), template(1:6))))
+            correct = correct + 1;
+        end
+        comp = comp + 1;
+    end
+    
+    acc = ((correct/comp)*100);
+    
+end
+end
+disp([num2str((correct/comp)*100) '%'])
+
+end
+
+
+function prediction = twildes(EYES, subjectTemplate, subject)
+
+for i = 1:length(EYES)
+    % get the normalised image
+    eye = alignIris(EYES(i).original, 200, EYES(i).irisRow, ...
+        EYES(i).irisCol, EYES(i).irisRad);
+    lap = gaussianLaplacian(eye);
+    trainingData(i).name = EYES(i).name;
+    trainingData(i).lap = lap;
+    
+    
+    if strcmp(EYES(i).name(1:5), subjectTemplate(1:5))
+        names{i,1} = 'Authentic';
+    else
+        names{i,1} = 'Imposter';
+    end
+end
+
+
+% find and remove the subject and template data
+
+ind = find(strcmp({trainingData.name}, subjectTemplate)==1);
+templateLap = trainingData(ind).lap;
+trainingData(ind) = [];
+names(ind) = [];
+
+
+ind = find(strcmp({trainingData.name}, subject)==1);
+subjectLap = trainingData(ind).lap;
+trainingData(ind) = [];
+names(ind) = [];
+
+
+% get match values
+for query = 1:length(trainingData)
+    queryName = trainingData(query).name;
+    queryLap = trainingData(query).lap;
+    
+    matchVals = normalisedCorrelation(templateLap, queryLap);
+    vals(query,1:4) = matchVals;
+end
+
+% and for subject
+subjectVals = normalisedCorrelation(templateLap, subjectLap);
+
+% build thing
+MdlQuadratic = fitcdiscr(vals, names);
+
+% predict
+pred = predict(MdlQuadratic, subjectVals);
+
+if strcmp(pred, 'Authentic')
+    prediction = 1;
+else
+    prediction = 0;
+end
+
+end
+
