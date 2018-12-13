@@ -1,0 +1,17 @@
+        
+        %placed after checking the eye exists - first read in and copy all
+        %to params 2, second run delete params and then copy params 2 to
+        %params, third run delete params 2
+        
+        %delete(fullfile(rootFolder, num2str(paddedID), LR, 'params2.csv'));
+        % read in params file
+        %allParams = csvread(fullfile(rootFolder, num2str(paddedID), LR, 'params2.csv'));        
+        %allParams = unique(allParams, 'rows');
+        %[prows, pcols] = size(allParams);
+        %for f = (1:prows)
+        %    line = allParams(f,:);
+        %    line = sprintf('%.0f,',line);
+        %    line = line(1:end-1);
+        %    writeParams(num2str(line), fullfile(rootFolder, num2str(paddedID), LR))
+        %end
+        %continue;
